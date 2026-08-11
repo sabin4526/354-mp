@@ -53,6 +53,14 @@ def test_table_data():
     return passed, ", ".join(counts)
 
 
+def test_foreign_keys():
+    """Check that every foreign key points to an existing row."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    problems = connection.execute("PRAGMA foreign_key_check").fetchall()
+    connection.close()
+    return len(problems) == 0, "No problems" if not problems else str(problems)
+
+
 def main():
     print("Starting library application test script")
     create_test_database()
@@ -63,6 +71,9 @@ def main():
 
         passed, received = test_table_data()
         print_result(2, "Required seed data", "At least 10 rows in every table", received, passed)
+
+        passed, received = test_foreign_keys()
+        print_result(3, "Foreign-key integrity", "No foreign-key problems", received, passed)
     finally:
         if os.path.exists(TEST_DATABASE):
             os.remove(TEST_DATABASE)
