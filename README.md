@@ -1,27 +1,18 @@
 # CMPT 354 Library Database Project
 
-This workspace contains the completed Step 1-3 materials and the scaffold for Steps 4-6.
+This project models a public-library system in SQLite. The database separates library titles (`Item`) from their physical copies (`Copy`) and specialises items into books, serials, and records. It also models people as members and staff, circulation (`Loan` and `Fine`), rooms and events, help requests, and staff-curated wishlist items. A serial-series relation removes the publisher dependency from individual serial issues.
 
-## Planned structure
+Availability is derived from open loans rather than stored. The schema includes foreign keys, checks, and triggers for active cards, outstanding balances, duplicate loans, late-return fines, event age/capacity rules, matching fine/loan members, and volunteer salaries.
 
-```text
-.
-|-- 354MP.txt
-|-- HANDOFF.md
-|-- Step1.pdf
-|-- mp_step2_ER_final.pdf
-|-- Step3.pdf
-|-- README.md
-|-- sql/
-|   |-- schema.sql
-|   `-- seed.sql
-|-- src/
-|   |-- app.py
-|   `-- database.py
-|-- tests/
-|   `-- README.md
-`-- library.db            # generated during Steps 4-5
+The seeded `library.db` powers a terminal application with eight actions: search items, borrow and return copies, catalogue donations, find and register for events, register volunteers, and queue librarian help requests. Borrowing assigns a three-week loan period to books and serials and one week to records; returns create applicable fines.
+
+## Run
+
+From the repository root, use Python 3:
+
+```powershell
+python src/app.py
+python tests/run_tests.py
 ```
 
-The Step 4 SQL schema and integrity triggers are implemented in `sql/schema.sql`.
-The Step 5 seed data and Step 6 Python application are not implemented yet.
+`sql/schema.sql` defines the database and `sql/seed.sql` provides the sample data. The included `library.db` is already built and seeded.
