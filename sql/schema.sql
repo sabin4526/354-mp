@@ -1,11 +1,9 @@
 -- CMPT-354 Library Database - Step 4 schema
--- Source design: HANDOFF.md and the submitted Step 3 BCNF analysis.
 
 PRAGMA foreign_keys = ON;
 
 BEGIN;
 
--- Catalog: Item is the supertype; each subtype reuses item_id as its key.
 CREATE TABLE Item (
     item_id        INTEGER PRIMARY KEY,
     title          TEXT NOT NULL,
@@ -53,7 +51,6 @@ CREATE TABLE Copy (
     acquired_date DATE
 );
 
--- People: specialization is overlapping, so a person may be both Member and Staff.
 CREATE TABLE Person (
     person_id     INTEGER PRIMARY KEY,
     first_name    TEXT NOT NULL,
@@ -104,7 +101,6 @@ CREATE TABLE Fine (
     CHECK (amount_paid <= amount)
 );
 
--- Events and rooms.
 CREATE TABLE Room (
     room_id   INTEGER PRIMARY KEY,
     name      TEXT UNIQUE NOT NULL,
@@ -139,7 +135,6 @@ CREATE TABLE EventRegistration (
     PRIMARY KEY (event_id, member_id)
 );
 
--- Reference services and acquisitions.
 CREATE TABLE HelpRequest (
     request_id    INTEGER PRIMARY KEY,
     member_id     INTEGER NOT NULL REFERENCES Member(person_id),
@@ -179,7 +174,6 @@ BEGIN
     SELECT RAISE(ABORT, 'volunteers must have NULL salary');
 END;
 
--- A loan-linked fine must belong to the same member as its loan.
 CREATE TRIGGER fine_member_matches_loan
 BEFORE INSERT ON Fine
 WHEN NEW.loan_id IS NOT NULL
@@ -192,7 +186,6 @@ BEGIN
     SELECT RAISE(ABORT, 'fine member does not match loan member');
 END;
 
--- Borrowing eligibility and physical-copy exclusivity.
 CREATE TRIGGER block_borrow_if_owing
 BEFORE INSERT ON Loan
 WHEN COALESCE((
@@ -246,7 +239,6 @@ BEGIN
     );
 END;
 
--- Event registration must satisfy the event's age range and registration cap.
 CREATE TRIGGER check_event_age
 BEFORE INSERT ON EventRegistration
 WHEN EXISTS (

@@ -1,13 +1,9 @@
 -- CMPT-354 Library Database - Step 5 seed data
--- Run after sql/schema.sql. The data is intentionally scenario-rich so that
--- availability, overdue fines, events, wishlist acquisition, and help queues
--- can all be demonstrated by the Step 6 application.
 
 PRAGMA foreign_keys = ON;
 
 BEGIN;
 
--- 15 people. Persons 1-5 are overlapping Member/Staff records.
 INSERT INTO Person (person_id, first_name, last_name, email, phone, date_of_birth, address) VALUES
     (1,  'Priya',  'Sharma',   'priya.sharma@example.com',   '604-555-0101', '1988-03-14', '345 Main Street, Vancouver'),
     (2,  'Jordan', 'Lee',      'jordan.lee@example.com',     '604-555-0102', '1992-11-02', '1188 Robson Street, Vancouver'),
@@ -37,7 +33,6 @@ INSERT INTO Member (person_id, card_number, member_since, card_status) VALUES
     (9,  'VPL-000009', '2024-02-14', 'Active'),
     (10, 'VPL-000010', '2020-12-02', 'Suspended');
 
--- Manager first, then the self-referencing staff hierarchy.
 INSERT INTO Staff (person_id, role, hire_date, salary, supervisor_id) VALUES
     (1,  'Manager',   '2017-06-01', 92000.00, NULL);
 INSERT INTO Staff (person_id, role, hire_date, salary, supervisor_id) VALUES
@@ -131,7 +126,6 @@ INSERT INTO Record (item_id, artist, label, runtime_min, genre) VALUES
     (29, 'John Coltrane',     'Impulse!',       47, 'Jazz'),
     (30, 'Pink Floyd',        'Harvest',        43, 'Progressive Rock');
 
--- Item 1 has five physical copies, allowing the application to show 3 of 5 available.
 INSERT INTO Copy (copy_id, item_id, barcode, condition, acquired_date) VALUES
     (1,  1,  'VPL-000001', 'Good', '2021-02-10'),
     (2,  1,  'VPL-000002', 'Good', '2021-02-10'),
@@ -168,7 +162,6 @@ INSERT INTO Copy (copy_id, item_id, barcode, condition, acquired_date) VALUES
     (33, 29, 'VPL-000033', 'Good', '2022-03-03'),
     (34, 30, 'VPL-000034', 'Fair', '2022-03-03');
 
--- Twelve loans: open and returned examples, including late returns.
 INSERT INTO Loan (loan_id, copy_id, member_id, borrow_date, due_date, renewal_count, return_date) VALUES
     (1,  1,  2,  '2026-07-01', '2026-07-22', 0, NULL),
     (2,  2,  3,  '2026-07-02', '2026-07-23', 1, '2026-07-20'),
@@ -183,7 +176,6 @@ INSERT INTO Loan (loan_id, copy_id, member_id, borrow_date, due_date, renewal_co
     (11, 11, 3,  '2026-06-25', '2026-07-16', 0, '2026-07-14'),
     (12, 15, 4,  '2026-07-18', '2026-08-08', 0, NULL);
 
--- Ten fines, including several loan-linked fines and non-loan damage/loss fines.
 INSERT INTO Fine (fine_id, member_id, loan_id, reason, amount, date_assessed, amount_paid, date_paid) VALUES
     (1,  4,  3,  'Overdue',         2.00, '2026-06-30', 0.00, NULL),
     (2,  7,  6,  'Overdue',         2.25, '2026-07-10', 1.00, '2026-07-15'),
