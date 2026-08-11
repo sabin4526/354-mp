@@ -121,6 +121,199 @@ def test_borrow_unavailable_copy():
         return "copy is already on loan" in str(error), str(error)
 
 
+def test_block_suspended_member():
+    """Check that a suspended card cannot borrow an item."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    try:
+        connection.execute(
+            """
+            INSERT INTO Loan (loan_id, copy_id, member_id, borrow_date, due_date)
+            VALUES (101, 14, 10, '2026-08-10', '2026-08-31')
+            """
+        )
+        connection.close()
+        return False, "A suspended member borrowed an item"
+    except sqlite3.IntegrityError as error:
+        connection.close()
+        return "member card is not active" in str(error), str(error)
+
+
+def test_block_member_owing_money():
+    """Check that a member owing over $10 cannot borrow an item."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    try:
+        connection.execute(
+            """
+            INSERT INTO Loan (loan_id, copy_id, member_id, borrow_date, due_date)
+            VALUES (102, 14, 1, '2026-08-10', '2026-08-31')
+            """
+        )
+        connection.close()
+        return False, "A member owing over $10 borrowed an item"
+    except sqlite3.IntegrityError as error:
+        connection.close()
+        return "member owes more than $10.00" in str(error), str(error)
+
+
+def test_late_return_fine():
+    """Check that returning an item late creates an overdue fine."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    connection.execute("UPDATE Loan SET return_date = '2026-08-01' WHERE loan_id = 1")
+    connection.commit()
+    fine = connection.execute(
+        "SELECT amount FROM Fine WHERE loan_id = 1 AND reason = 'Overdue'"
+    ).fetchone()
+    connection.close()
+    amount = fine[0] if fine else None
+    return amount == 2.50, f"Overdue fine amount: ${amount}"
+
+
+def test_fine_member_matches_loan():
+    """Check that a fine cannot name a different member than its loan."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    try:
+        connection.execute(
+            """
+            INSERT INTO Fine (fine_id, member_id, loan_id, reason, amount, date_assessed)
+            VALUES (99, 2, 3, 'Overdue', 1.00, '2026-08-01')
+            """
+        )
+        connection.close()
+        return False, "A mismatched fine was created"
+    except sqlite3.IntegrityError as error:
+        connection.close()
+        return "fine member does not match loan member" in str(error), str(error)
+
+
+def test_event_registration():
+    """Check that an eligible member can register for an event."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    connection.execute(
+        """
+        INSERT INTO EventRegistration (event_id, member_id, date_registered)
+        VALUES (3, 1, '2026-08-10')
+        """
+    )
+    connection.commit()
+    registration = connection.execute(
+        "SELECT 1 FROM EventRegistration WHERE event_id = 3 AND member_id = 1"
+    ).fetchone()
+    connection.close()
+    return registration is not None, "Member 1 registered for event 3"
+
+
+def test_event_age_rule():
+    """Check that an adult cannot register for the teen event."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    try:
+        connection.execute(
+            """
+            INSERT INTO EventRegistration (event_id, member_id, date_registered)
+            VALUES (5, 1, '2026-08-10')
+            """
+        )
+        connection.close()
+        return False, "An adult registered for the teen event"
+    except sqlite3.IntegrityError as error:
+        connection.close()
+        return "member is outside event age range" in str(error), str(error)
+
+
+def test_event_capacity_rule():
+    """Check that a full event cannot accept another registration."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    connection.execute("UPDATE Event SET max_attendees = 1 WHERE event_id = 6")
+    connection.commit()
+    try:
+        connection.execute(
+            """
+            INSERT INTO EventRegistration (event_id, member_id, date_registered)
+            VALUES (6, 2, '2026-08-10')
+            """
+        )
+        connection.close()
+        return False, "A full event accepted another registration"
+    except sqlite3.IntegrityError as error:
+        connection.close()
+        return "event registration is full" in str(error), str(error)
+
+
+def test_volunteer_registration():
+    """Check that a volunteer is stored as Staff with a NULL salary."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    connection.execute(
+        """
+        INSERT INTO Person (person_id, first_name, last_name, email)
+        VALUES (99, 'Test', 'Volunteer', 'test.volunteer@example.com')
+        """
+    )
+    connection.execute(
+        """
+        INSERT INTO Staff (person_id, role, hire_date, salary, supervisor_id)
+        VALUES (99, 'Volunteer', '2026-08-10', NULL, 1)
+        """
+    )
+    connection.commit()
+    volunteer = connection.execute(
+        "SELECT role, salary FROM Staff WHERE person_id = 99"
+    ).fetchone()
+    connection.close()
+    return volunteer == ('Volunteer', None), f"Volunteer record: {volunteer}"
+
+
+def test_help_request():
+    """Check that a help request enters the unassigned open queue."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    connection.execute(
+        """
+        INSERT INTO HelpRequest (request_id, member_id, staff_id, question, date_asked, status)
+        VALUES (99, 2, NULL, 'Test question', '2026-08-10', 'Open')
+        """
+    )
+    connection.commit()
+    request = connection.execute(
+        "SELECT staff_id, status FROM HelpRequest WHERE request_id = 99"
+    ).fetchone()
+    connection.close()
+    return request == (None, 'Open'), f"Help request: {request}"
+
+
+def test_donation_and_wishlist():
+    """Check that a donated book adds an item, copy, and wishlist link."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    connection.execute(
+        """
+        INSERT INTO Item (item_id, title, pub_year, subject, language, shelf_location)
+        VALUES (99, 'The Covenant of Water', 2023, 'Fiction', 'English', 'FIC VERGHESE')
+        """
+    )
+    connection.execute(
+        """
+        INSERT INTO Book (item_id, isbn, author, publisher, pages)
+        VALUES (99, '9789999999999', 'Abraham Verghese', 'Grove Press', 720)
+        """
+    )
+    connection.execute(
+        """
+        INSERT INTO Copy (copy_id, item_id, barcode, condition, acquired_date)
+        VALUES (99, 99, 'TEST-DONATION-001', 'Good', '2026-08-10')
+        """
+    )
+    connection.execute(
+        """
+        UPDATE WishlistItem
+        SET status = 'Acquired', acquired_item = 99
+        WHERE wish_id = 1
+        """
+    )
+    connection.commit()
+    wishlist = connection.execute(
+        "SELECT status, acquired_item FROM WishlistItem WHERE wish_id = 1"
+    ).fetchone()
+    connection.close()
+    return wishlist == ('Acquired', 99), f"Wishlist item: {wishlist}"
+
+
 def main():
     print("Starting library application test script")
     create_test_database()
@@ -143,6 +336,36 @@ def main():
 
         passed, received = test_borrow_unavailable_copy()
         print_result(6, "Block unavailable copy", "Copy is already on loan", received, passed)
+
+        passed, received = test_block_suspended_member()
+        print_result(7, "Block suspended member", "Member card is not active", received, passed)
+
+        passed, received = test_block_member_owing_money()
+        print_result(8, "Block member owing money", "Member owes more than $10.00", received, passed)
+
+        passed, received = test_late_return_fine()
+        print_result(9, "Late return fine", "Overdue fine amount: $2.5", received, passed)
+
+        passed, received = test_fine_member_matches_loan()
+        print_result(10, "Fine member matches loan", "Mismatched fine is rejected", received, passed)
+
+        passed, received = test_event_registration()
+        print_result(11, "Event registration", "Member 1 registered for event 3", received, passed)
+
+        passed, received = test_event_age_rule()
+        print_result(12, "Event age rule", "Member is outside event age range", received, passed)
+
+        passed, received = test_event_capacity_rule()
+        print_result(13, "Event capacity rule", "Event registration is full", received, passed)
+
+        passed, received = test_volunteer_registration()
+        print_result(14, "Volunteer registration", "Volunteer has NULL salary", received, passed)
+
+        passed, received = test_help_request()
+        print_result(15, "Help request queue", "Unassigned request with Open status", received, passed)
+
+        passed, received = test_donation_and_wishlist()
+        print_result(16, "Donation and wishlist", "Wishlist item is acquired as item 99", received, passed)
     finally:
         if os.path.exists(TEST_DATABASE):
             os.remove(TEST_DATABASE)
