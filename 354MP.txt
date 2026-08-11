@@ -1,0 +1,60 @@
+Step (1): Project Specifications (5 points)
+In this step, you will define the details of your project. We want you to describe and build a database for a library. We only provide you with the following information
+
+Library has print books, online books, magazines, scientific journals, records, etc.
+People can borrow the items from library and return by the due date.
+People may be subject to fines if they do not return items by the due date.
+Library also holds book clubs, book related events, art shows, film screenings, etc.
+Library events are recommended for specific audiences.
+Library events are held on library social rooms.
+People can attend library events for free.
+Library also has personnel and record keeping for personnel.
+Library also keeps records of items (books, etc.) that might be added to library in the future.
+The rest of the definitions of the domain (including details of administration or services) is your work. Approach it as a real-world phase of finding out about a database as we described in the Entity Relationship Modelling discussions. Find out about needs and requirements of a library database and specify it with simple words.
+
+Step (2): E/R Diagrams (10 points)
+In this step, you should define your entity-relationship model and draw your E/R diagrams. You can use any drawing software of choice for this step, or draw by hand and scan if it would be clean and readable.
+
+Please use the ER diagram notations described in the class.
+Try to make your application interesting and examine your knowledge by using variety of different entities, attributes, and relationships with different key and participation constraints.
+Step (3): Does your design allow anomalies? (10 points)
+In this step you will review your design as it translates to schemas. You should decide whether your design meets the requirements we discussed to avoid anomalies. To perform this task, you have to analyze all non-trivial functional dependencies in your database based on charactristics of your data, and ensure your tables are free of bad functional dependencies.
+
+Either your design does not allow anomalies, or you need to re-design. If your design does not allow anomalies, that is the output. Otherwise, repeat decomposition, until you have your database in BCNF. Provide your written work explaining why your final design does not have anomalies (FDs, BCNF, prove no bad FDs)
+
+Step (4): SQL Schema (5 points)
+Create your database and convert your ERDs to table schemas in this database using sqlite. Make sure you have required constraints and triggers in place to ensure the integrity of your data.
+
+Step (5): Populate Tables (3 points)
+Generate and insert at least 10 realistic tuples, based on your project description, into each of the tables in your database. You can use random custom data generators or use available real data. The choice is up to you.
+
+Step (6): Build You Database Application (15 points)
+Use python and sqlite (local on on GC) to build your database application to allow a library user to:
+
+Find an item in the library
+Borrow an item from the library
+Return a borrowed item
+Donate an item to the library
+Find an event in the library
+Register for an event in the library
+Volunteer for the library
+Ask for help from a librarian
+While maintaining the integrity of your database.
+
+Note: You can start doing your project, but for making your database application, you need what you learn after the midterm. So, you can keep this last step to when enough information and resources are provided to you (GC credit emails to be sent on July 22nd), and updated here.
+
+ 
+
+Submission Instructions
+Please provide your answers to steps 1-3 of the project in mp.pdf file.
+
+Please provide library.db file as the output of steps 4-5.
+
+Please use python and sqlite (or DB options in GC) to build your database application.
+
+Submit the pdf file, db file, and application files together in a zip file to Mini Project activity on Canvas.
+
+ 
+
+Acknowledgements
+This mini project is adopted (with minor modifications) from the previous offerings of this course.
