@@ -82,6 +82,28 @@ def test_item_availability():
     return (available, total) == (3, 5), f"{available} available out of {total} copies"
 
 
+def test_borrow_available_copy():
+    """Check that an active member can borrow an available copy."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    connection.execute("PRAGMA foreign_keys = ON")
+    try:
+        connection.execute(
+            """
+            INSERT INTO Loan (loan_id, copy_id, member_id, borrow_date, due_date)
+            VALUES (99, 6, 2, '2026-08-10', '2026-08-31')
+            """
+        )
+        connection.commit()
+        loan = connection.execute(
+            "SELECT loan_id FROM Loan WHERE loan_id = 99"
+        ).fetchone()
+        connection.close()
+        return loan is not None, "Loan 99 was created"
+    except sqlite3.IntegrityError as error:
+        connection.close()
+        return False, str(error)
+
+
 def main():
     print("Starting library application test script")
     create_test_database()
@@ -98,6 +120,9 @@ def main():
 
         passed, received = test_item_availability()
         print_result(4, "Derived item availability", "3 available out of 5 copies", received, passed)
+
+        passed, received = test_borrow_available_copy()
+        print_result(5, "Borrow available copy", "Loan 99 is created", received, passed)
     finally:
         if os.path.exists(TEST_DATABASE):
             os.remove(TEST_DATABASE)
