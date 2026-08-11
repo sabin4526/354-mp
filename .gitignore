@@ -5,4 +5,4 @@ __pycache__/
 *.db-shm
 *.db-wal
 tmp/
-
+tests/test_library.db
