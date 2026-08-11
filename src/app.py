@@ -431,7 +431,7 @@ def main():
 
         choice = input("Choose an option: ").strip()
         if choice == "0":
-            print("Goodbye.")
+            print("Thank you, come again!")
             break
         action = actions.get(choice)
         if action is None:
