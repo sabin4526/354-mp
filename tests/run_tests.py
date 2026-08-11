@@ -104,6 +104,23 @@ def test_borrow_available_copy():
         return False, str(error)
 
 
+def test_borrow_unavailable_copy():
+    """Check that a copy already on loan cannot be borrowed again."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    try:
+        connection.execute(
+            """
+            INSERT INTO Loan (loan_id, copy_id, member_id, borrow_date, due_date)
+            VALUES (100, 6, 3, '2026-08-10', '2026-08-31')
+            """
+        )
+        connection.close()
+        return False, "A second loan was created"
+    except sqlite3.IntegrityError as error:
+        connection.close()
+        return "copy is already on loan" in str(error), str(error)
+
+
 def main():
     print("Starting library application test script")
     create_test_database()
@@ -123,6 +140,9 @@ def main():
 
         passed, received = test_borrow_available_copy()
         print_result(5, "Borrow available copy", "Loan 99 is created", received, passed)
+
+        passed, received = test_borrow_unavailable_copy()
+        print_result(6, "Block unavailable copy", "Copy is already on loan", received, passed)
     finally:
         if os.path.exists(TEST_DATABASE):
             os.remove(TEST_DATABASE)
