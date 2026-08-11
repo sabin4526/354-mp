@@ -1,13 +1,12 @@
 """Simple terminal tests for the library database application."""
 
+import os
 import shutil
 import sqlite3
-from pathlib import Path
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SOURCE_DATABASE = PROJECT_ROOT / "library.db"
-TEST_DATABASE = Path(__file__).resolve().parent / "test_library.db"
+SOURCE_DATABASE = "library.db"
+TEST_DATABASE = "tests/test_library.db"
 
 
 def print_result(number, name, expected, received, passed):
@@ -20,8 +19,8 @@ def print_result(number, name, expected, received, passed):
 
 def create_test_database():
     """Create a disposable copy so tests never modify library.db."""
-    if TEST_DATABASE.exists():
-        TEST_DATABASE.unlink()
+    if os.path.exists(TEST_DATABASE):
+        os.remove(TEST_DATABASE)
     shutil.copy2(SOURCE_DATABASE, TEST_DATABASE)
 
 
@@ -43,10 +42,9 @@ def main():
         passed, received = test_database_structure()
         print_result(1, "Database structure", "16 tables", f"{received} tables", passed)
     finally:
-        if TEST_DATABASE.exists():
-            TEST_DATABASE.unlink()
+        if os.path.exists(TEST_DATABASE):
+            os.remove(TEST_DATABASE)
 
 
 if __name__ == "__main__":
     main()
-
