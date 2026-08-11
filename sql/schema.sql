@@ -192,18 +192,6 @@ BEGIN
     SELECT RAISE(ABORT, 'fine member does not match loan member');
 END;
 
-CREATE TRIGGER fine_member_matches_loan_update
-BEFORE UPDATE OF loan_id, member_id ON Fine
-WHEN NEW.loan_id IS NOT NULL
- AND NOT EXISTS (
-     SELECT 1 FROM Loan
-     WHERE Loan.loan_id = NEW.loan_id
-       AND Loan.member_id = NEW.member_id
- )
-BEGIN
-    SELECT RAISE(ABORT, 'fine member does not match loan member');
-END;
-
 -- Borrowing eligibility and physical-copy exclusivity.
 CREATE TRIGGER block_borrow_if_owing
 BEFORE INSERT ON Loan
@@ -236,22 +224,6 @@ WHEN EXISTS (
 )
 BEGIN
     SELECT RAISE(ABORT, 'member card is not active');
-END;
-
--- A renewal must increase both the due date and renewal counter.
-CREATE TRIGGER validate_loan_renewal
-BEFORE UPDATE OF due_date, renewal_count ON Loan
-WHEN NEW.renewal_count > OLD.renewal_count
- AND NEW.due_date <= OLD.due_date
-BEGIN
-    SELECT RAISE(ABORT, 'renewal must extend the due date');
-END;
-
-CREATE TRIGGER validate_loan_renewal_count
-BEFORE UPDATE OF due_date, renewal_count ON Loan
-WHEN NEW.renewal_count < OLD.renewal_count
-BEGIN
-    SELECT RAISE(ABORT, 'renewal count cannot decrease');
 END;
 
 -- Late returns create one frozen overdue fine at 25 cents per day, capped at $5.
@@ -320,4 +292,3 @@ BEGIN
 END;
 
 COMMIT;
-
