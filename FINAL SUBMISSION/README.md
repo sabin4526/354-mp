@@ -6,13 +6,8 @@ Availability is derived from open loans rather than stored. The schema includes 
 
 The seeded `library.db` powers a terminal application with eight actions: search items, borrow and return copies, catalogue donations, find and register for events, register volunteers, and queue librarian help requests. Borrowing assigns a three-week loan period to books and serials and one week to records; returns create applicable fines.
 
-## Run
+## Files
 
-From the repository root, use Python 3:
-
-```powershell
-python src/app.py
-python tests/run_tests.py
-```
-
-`sql/schema.sql` defines the database and `sql/seed.sql` provides the sample data. The included `library.db` is already built and seeded.
+- `sql/schema.sql` defines the database  
+- `sql/seed.sql` provides the sample data 
+- The included `library.db` is already built and seeded.
