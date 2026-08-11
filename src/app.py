@@ -1,5 +1,3 @@
-"""Simple command-line application for the CMPT-354 library database."""
-
 import sqlite3
 from datetime import date, timedelta
 
@@ -7,7 +5,6 @@ from database import get_connection
 
 
 def ask_text(prompt, required=True):
-    """Read a text value, optionally requiring a non-empty response."""
     while True:
         value = input(prompt).strip()
         if value or not required:
@@ -16,7 +13,6 @@ def ask_text(prompt, required=True):
 
 
 def ask_int(prompt, required=True):
-    """Read an integer, or return None for an optional blank value."""
     while True:
         value = input(prompt).strip()
         if not value and not required:
@@ -28,7 +24,6 @@ def ask_int(prompt, required=True):
 
 
 def ask_date(prompt, default=None):
-    """Read an ISO date, using the supplied default when left blank."""
     while True:
         suffix = f" [{default}]" if default else ""
         value = input(f"{prompt}{suffix}: ").strip() or default
@@ -39,7 +34,6 @@ def ask_date(prompt, default=None):
 
 
 def next_id(connection, table, column):
-    """Return the next integer identifier for one table."""
     row = connection.execute(
         f"SELECT COALESCE(MAX({column}), 0) + 1 FROM {table}"
     ).fetchone()
@@ -448,4 +442,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

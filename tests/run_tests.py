@@ -1,5 +1,3 @@
-"""Simple terminal tests for the library database application."""
-
 import os
 import shutil
 import sqlite3
@@ -10,7 +8,6 @@ TEST_DATABASE = "tests/test_library.db"
 
 
 def print_result(number, name, expected, received, passed):
-    """Print one test result in a readable format."""
     print(f"\nTest {number}: {name}")
     print(f"Expected answer: {expected}")
     print(f"Received answer: {received}")
@@ -18,14 +15,12 @@ def print_result(number, name, expected, received, passed):
 
 
 def create_test_database():
-    """Create a disposable copy so tests never modify library.db."""
     if os.path.exists(TEST_DATABASE):
         os.remove(TEST_DATABASE)
     shutil.copy2(SOURCE_DATABASE, TEST_DATABASE)
 
 
 def test_database_structure():
-    """Check that the copied database contains the final 16 tables."""
     connection = sqlite3.connect(TEST_DATABASE)
     table_count = connection.execute(
         "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table'"
@@ -35,7 +30,6 @@ def test_database_structure():
 
 
 def test_table_data():
-    """Check that every table has at least 10 rows."""
     tables = [
         "Item", "Book", "SerialSeries", "Serial", "Record", "Copy",
         "Person", "Member", "Staff", "Loan", "Fine", "Room", "Event",
@@ -54,7 +48,6 @@ def test_table_data():
 
 
 def test_foreign_keys():
-    """Check that every foreign key points to an existing row."""
     connection = sqlite3.connect(TEST_DATABASE)
     problems = connection.execute("PRAGMA foreign_key_check").fetchall()
     connection.close()
@@ -62,7 +55,6 @@ def test_foreign_keys():
 
 
 def test_item_availability():
-    """Check that open loans correctly reduce available copies."""
     connection = sqlite3.connect(TEST_DATABASE)
     total = connection.execute(
         "SELECT COUNT(*) FROM Copy WHERE item_id = 1"
@@ -83,7 +75,6 @@ def test_item_availability():
 
 
 def test_borrow_available_copy():
-    """Check that an active member can borrow an available copy."""
     connection = sqlite3.connect(TEST_DATABASE)
     connection.execute("PRAGMA foreign_keys = ON")
     try:
@@ -105,7 +96,6 @@ def test_borrow_available_copy():
 
 
 def test_borrow_unavailable_copy():
-    """Check that a copy already on loan cannot be borrowed again."""
     connection = sqlite3.connect(TEST_DATABASE)
     try:
         connection.execute(
@@ -122,7 +112,6 @@ def test_borrow_unavailable_copy():
 
 
 def test_block_suspended_member():
-    """Check that a suspended card cannot borrow an item."""
     connection = sqlite3.connect(TEST_DATABASE)
     try:
         connection.execute(
@@ -139,7 +128,6 @@ def test_block_suspended_member():
 
 
 def test_block_member_owing_money():
-    """Check that a member owing over $10 cannot borrow an item."""
     connection = sqlite3.connect(TEST_DATABASE)
     try:
         connection.execute(
@@ -156,7 +144,6 @@ def test_block_member_owing_money():
 
 
 def test_late_return_fine():
-    """Check that returning an item late creates an overdue fine."""
     connection = sqlite3.connect(TEST_DATABASE)
     connection.execute("UPDATE Loan SET return_date = '2026-08-01' WHERE loan_id = 1")
     connection.commit()
@@ -169,7 +156,6 @@ def test_late_return_fine():
 
 
 def test_fine_member_matches_loan():
-    """Check that a fine cannot name a different member than its loan."""
     connection = sqlite3.connect(TEST_DATABASE)
     try:
         connection.execute(
@@ -186,7 +172,6 @@ def test_fine_member_matches_loan():
 
 
 def test_event_registration():
-    """Check that an eligible member can register for an event."""
     connection = sqlite3.connect(TEST_DATABASE)
     connection.execute(
         """
@@ -203,7 +188,6 @@ def test_event_registration():
 
 
 def test_event_age_rule():
-    """Check that an adult cannot register for the teen event."""
     connection = sqlite3.connect(TEST_DATABASE)
     try:
         connection.execute(
@@ -220,7 +204,6 @@ def test_event_age_rule():
 
 
 def test_event_capacity_rule():
-    """Check that a full event cannot accept another registration."""
     connection = sqlite3.connect(TEST_DATABASE)
     connection.execute("UPDATE Event SET max_attendees = 1 WHERE event_id = 6")
     connection.commit()
@@ -239,7 +222,6 @@ def test_event_capacity_rule():
 
 
 def test_volunteer_registration():
-    """Check that a volunteer is stored as Staff with a NULL salary."""
     connection = sqlite3.connect(TEST_DATABASE)
     connection.execute(
         """
@@ -262,7 +244,6 @@ def test_volunteer_registration():
 
 
 def test_help_request():
-    """Check that a help request enters the unassigned open queue."""
     connection = sqlite3.connect(TEST_DATABASE)
     connection.execute(
         """
@@ -279,7 +260,6 @@ def test_help_request():
 
 
 def test_donation_and_wishlist():
-    """Check that a donated book adds an item, copy, and wishlist link."""
     connection = sqlite3.connect(TEST_DATABASE)
     connection.execute(
         """
