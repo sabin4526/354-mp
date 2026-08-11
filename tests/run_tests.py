@@ -61,6 +61,27 @@ def test_foreign_keys():
     return len(problems) == 0, "No problems" if not problems else str(problems)
 
 
+def test_item_availability():
+    """Check that open loans correctly reduce available copies."""
+    connection = sqlite3.connect(TEST_DATABASE)
+    total = connection.execute(
+        "SELECT COUNT(*) FROM Copy WHERE item_id = 1"
+    ).fetchone()[0]
+    available = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM Copy c
+        WHERE c.item_id = 1
+          AND NOT EXISTS (
+              SELECT 1 FROM Loan l
+              WHERE l.copy_id = c.copy_id AND l.return_date IS NULL
+          )
+        """
+    ).fetchone()[0]
+    connection.close()
+    return (available, total) == (3, 5), f"{available} available out of {total} copies"
+
+
 def main():
     print("Starting library application test script")
     create_test_database()
@@ -74,6 +95,9 @@ def main():
 
         passed, received = test_foreign_keys()
         print_result(3, "Foreign-key integrity", "No foreign-key problems", received, passed)
+
+        passed, received = test_item_availability()
+        print_result(4, "Derived item availability", "3 available out of 5 copies", received, passed)
     finally:
         if os.path.exists(TEST_DATABASE):
             os.remove(TEST_DATABASE)
